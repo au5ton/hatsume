@@ -9,6 +9,11 @@ Hatsume is written in Node.js v10.x, however she might work on lower versions. K
 
 To get started:
 - I'll write this later
+- Setup mySQL or MariaDB (MariaDB please)
+- Import the SQL database: 
+- `mysql -u root -p`
+- `mysql> CREATE DATABASE new_database;`
+- `mysql -u username -p new_database < bot_data.sql`
 
 ##### Character
 

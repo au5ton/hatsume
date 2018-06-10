@@ -9,6 +9,7 @@ const START_TIME = new Date();
 var BOT_USERNAME;
 
 // Custom modules
+const bot_util = require('./lib/bot_util');
 const database = require('./lib/database');
 const User = require('./lib/classes/User');
 const Request = require('./lib/classes/Request');
@@ -51,24 +52,29 @@ bot.hears(new RegExp('\/enroll|\/enroll@' + BOT_USERNAME), (context) => {
 	});
 });
 
-bot.hears(new RegExp('\/one|\/one@' + BOT_USERNAME), (context) => {
-	database.users.setState(context.update.message.from.id, 1).then(info => {
-		context.reply('state set to one');
-	}).catch(err => {
-		//
-	});
-});
-bot.hears(new RegExp('\/two|\/two@' + BOT_USERNAME), (context) => {
-	database.users.setState(context.update.message.from.id, 2).then(info => {
-		context.reply('state set to two');
+bot.hears(new RegExp('\/unsubscribe|\/unsubscribe@' + BOT_USERNAME), (context) => {
+	database.users.remove('telegram_id', context.update.message.from.id).then(info => {
+		context.reply('You\'ve been removed from the database. Next time we talk it\'ll be like the first time we spoke.');
 	}).catch(err => {
 		//
 	});
 });
 
 bot.on('message', (context) => {
-	// do something
-	// context.update.message
+	database.users.getState(context.update.from.id).then(chat_state => {
+		bot_util.processMessage(context.update.message, chat_state).then((response, nextState) => {
+			context.reply(response);
+			database.users.setState(context.update.from.id,nextState).catch(err => logger.error(err));
+		}).catch(err => logger.error(err));
+	});
+});
+bot.on('edited_message', (context) => {
+	database.users.getState(context.update.from.id).then(chat_state => {
+		bot_util.processMessage(context.update.edited_message, chat_state).then((response, nextState) => {
+			context.reply(response);
+			database.users.setState(context.update.from.id,nextState).catch(err => logger.error(err));
+		}).catch(err => logger.error(err));
+	});
 });
 
 logger.log('Bot active. Performing startup checks.');
