@@ -33,6 +33,11 @@ bot.hears(new RegExp('\/uptime|\/uptime@' + BOT_USERNAME), (context) => {
 	context.reply(''+prettyMs(new Date() - START_TIME));
 });
 
+bot.on('message', (context) => {
+	// do something
+	// context.update.message
+});
+
 logger.log('Bot active. Performing startup checks.');
 
 logger.warn('Is our Telegram token valid?');
