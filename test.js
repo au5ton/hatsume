@@ -52,6 +52,13 @@ var knex = require('knex')({
 //     logger.log(results);
 // });
 
+// Updating a user
+// pool.query(knex('users').where('telegram_id', 2).update({
+//     accepted_agreement: true
+// }).toString(), (error, results, fields) => {
+//     logger.log(results);
+// });
+
 
 
 // Creating a new user
