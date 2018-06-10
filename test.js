@@ -10,25 +10,30 @@ logger.setOption('prefix_date',true);
 
 process.on('unhandledRejection', r => logger.error('unhandledRejection: ',r.stack,'\n',r));
 
-const mysql = require('mysql');
-var pool = mysql.createPool({
-    connectionLimit: 10,
-    host: process.env.MARIADB_HOST,
-    user: process.env.MARIADB_USER,
-    password: process.env.MARIADB_PASS,
-    database: process.env.MARIADB_DB
-});
 
-var knex = require('knex')({
-    client: 'mysql',
-    connection: {
-        host : process.env.MARIADB_HOST,
-        user : process.env.MARIADB_USER,
-        password : process.env.MARIADB_PASS,
-        database : process.env.MARIADB_DB
-    },
-    pool: { min: 0, max: 8}
-});
+// Custom modules
+const database = require('./lib/database');
+
+
+// const mysql = require('mysql');
+// var pool = mysql.createPool({
+//     connectionLimit: 10,
+//     host: process.env.MARIADB_HOST,
+//     user: process.env.MARIADB_USER,
+//     password: process.env.MARIADB_PASS,
+//     database: process.env.MARIADB_DB
+// });
+
+// var knex = require('knex')({
+//     client: 'mysql',
+//     connection: {
+//         host : process.env.MARIADB_HOST,
+//         user : process.env.MARIADB_USER,
+//         password : process.env.MARIADB_PASS,
+//         database : process.env.MARIADB_DB
+//     },
+//     pool: { min: 0, max: 8}
+// });
 
 // Getting all users (knex)
 // pool.query(knex('users').select('*').toString(), (error, results, fields) => {
@@ -69,3 +74,11 @@ var knex = require('knex')({
 // 	// do something
 // 	// context.update.message
 // });
+
+// database.users.get('telegram_id',0).then((results) => {
+//     logger.log(results);
+// }).catch(err => console.log);
+
+database.users.checkFor('telegram_id',0).then((results) => {
+    logger.log(results);
+}).catch(err => console.log);
