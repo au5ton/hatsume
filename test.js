@@ -13,6 +13,8 @@ process.on('unhandledRejection', r => logger.error('unhandledRejection: ',r.stac
 
 // Custom modules
 const database = require('./lib/database');
+const User = require('./lib/classes/User');
+const Request = require('./lib/classes/Request');
 
 
 // const mysql = require('mysql');
@@ -79,6 +81,14 @@ const database = require('./lib/database');
 //     logger.log(results);
 // }).catch(err => console.log);
 
-database.users.checkFor('telegram_id',0).then((results) => {
-    logger.log(results);
-}).catch(err => console.log);
+// database.users.checkFor('telegram_id',).then((results) => {
+//     logger.log(results);
+// }).catch(err => console.log);
+
+database.users.add(new User({
+    telegram_id: 80379146,
+    telegram_name: 'Austin',
+    telegram_handle: 'austinj'
+})).then(info => {
+    logger.success('done');
+}).catch(err => logger.error(err));
