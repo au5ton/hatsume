@@ -42,12 +42,33 @@ bot.hears(new RegExp('\/uptime|\/uptime@' + BOT_USERNAME), (context) => {
 });
 
 bot.hears(new RegExp('\/enroll|\/enroll@' + BOT_USERNAME), (context) => {
-	database.users.init(context.update.message.from.id, context.update.message.from.first_name, context.update.message.from.username).then(info => {
-		if(info === 'already added') {
-			context.reply('You\'re already enrolled.');
+	database.users.checkFor('telegram_id', context.update.message.from.id).then(info => {
+		if(info === 'found') {
+			database.users.get('telegram_id', context.update.message.from.id).then(myUser => {
+				if(myUser.plex_username === null) {
+					if(myUser.chat_state === 0) {
+						database.users.setState(myUser.telegram_id, 1).then(info => {
+							context.reply('Please send your Plex.tv username (or email if you don\'t have one).');
+						}).catch(err => logger.error(err));
+					}
+					else {
+						context.reply('Please send your Plex.tv username (or email if you don\'t have one).');
+					}
+				}
+				else {
+					context.reply('You\'re already enrolled.');
+				}
+			}).catch(err => logger.error(err));;
 		}
 		else {
-			context.reply('Please send your Plex.tv username (or email if you don\'t have one).');
+			database.users.init(context.update.message.from.id, context.update.message.from.first_name, context.update.message.from.username).then(info => {
+				if(info === 'already added') {
+					context.reply('You\'re already enrolled.');
+				}
+				else {
+					context.reply('Please send your Plex.tv username (or email if you don\'t have one).');
+				}
+			});
 		}
 	});
 });
