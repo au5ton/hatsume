@@ -47,7 +47,7 @@ bot.hears(new RegExp('\/enroll|\/enroll@' + BOT_USERNAME), (context) => {
 			context.reply('You\'re already enrolled.');
 		}
 		else {
-			context.reply('You\'ve been added to the database.');
+			context.reply('Please send your Plex.tv username (or email if you don\'t have one).');
 		}
 	});
 });
@@ -61,18 +61,22 @@ bot.hears(new RegExp('\/unsubscribe|\/unsubscribe@' + BOT_USERNAME), (context) =
 });
 
 bot.on('message', (context) => {
-	database.users.getState(context.update.from.id).then(chat_state => {
-		bot_util.processMessage(context.update.message, chat_state).then((response, nextState) => {
-			context.reply(response);
-			database.users.setState(context.update.from.id,nextState).catch(err => logger.error(err));
+	database.users.getState(context.update.message.from.id).then(chat_state => {
+		bot_util.processMessage(context.update.message, chat_state).then((processed) => {
+			context.reply(processed.response);
+			if(processed.nextState !== null) {
+				database.users.setState(context.update.message.from.id,processed.nextState).catch(err => logger.error(err));
+			}
 		}).catch(err => logger.error(err));
 	});
 });
 bot.on('edited_message', (context) => {
-	database.users.getState(context.update.from.id).then(chat_state => {
-		bot_util.processMessage(context.update.edited_message, chat_state).then((response, nextState) => {
-			context.reply(response);
-			database.users.setState(context.update.from.id,nextState).catch(err => logger.error(err));
+	database.users.getState(context.update.message.from.id).then(chat_state => {
+		bot_util.processMessage(context.update.edited_message, chat_state).then((processed) => {
+			context.reply(processed.response);
+			if(processed.nextState !== null) {
+				database.users.setState(context.update.message.from.id,processed.nextState).catch(err => logger.error(err));
+			}
 		}).catch(err => logger.error(err));
 	});
 });
