@@ -4,9 +4,6 @@ require('dotenv').config(); //get the environment variables described in .env
 const Telegraf = require('telegraf')
 const logger = require('au5ton-logger');
 logger.setOption('prefix_date',true);
-const os = require('os');
-const fetch = require('node-fetch');
-var xml = require('xml2json');
 
 // Create a bot that uses 'polling' to fetch new updates
 //const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN);
@@ -16,51 +13,13 @@ process.on('unhandledRejection', r => logger.error('unhandledRejection: ',r.stac
 
 // Custom modules
 const database = require('./lib/database');
+const content = require('./lib/content');
 const User = require('./lib/classes/User');
 const Request = require('./lib/classes/Request');
 
-const PlexAPI = require("plex-api");
-
-const app_options = {
-    identifier: 'com.github.au5ton.hatsume',
-    product: 'hatsume/Node.js',
-    version: '1.0',
-    deviceName: 'Node.js',
-    platform: 'Node.js',
-    platformVersion: process.version,
-    device: os.platform()
-};
-
-var client = new PlexAPI({
-    hostname: process.env.PMS_HOSTNAME,
-    port: process.env.PMS_PORT,
-    username: process.env.PMS_USERNAME,
-    password: process.env.PMS_PASSWORD,
-    options: app_options
-});
-
-client.query('/myplex/account').then(function (result) {
-    //logger.log(result)
-    
-    fetch('https://plex.tv/pms/friends/all', {
-        headers: {
-            'X-Plex-Token': result.MyPlex.authToken,
-            'X-Plex-Product': app_options.product,
-            'X-Plex-Version': app_options.version,
-            'X-Plex-Client-Identifier': app_options.identifier
-        }
-    })
-    .then(res => res.text())
-    .then(res => {
-        let data = JSON.parse(xml.toJson(res));
-        let users = data.MediaContainer.User;
-        for(let i in users) {
-            logger.log(users[i]['username'])
-        }
-    })
-
-}, function (err) {
-	console.error("Could not connect to server", err);
+content.getContentInfoFromIMDBId('tt2250912').then(request => {
+    logger.log(request)
+    logger.log(request instanceof Request)
 });
 
 // const mysql = require('mysql');
