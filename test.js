@@ -55,7 +55,7 @@ client.query('/myplex/account').then(function (result) {
         let data = JSON.parse(xml.toJson(res));
         let users = data.MediaContainer.User;
         for(let i in users) {
-            logger.log(users[i]['email'])
+            logger.log(users[i]['username'])
         }
     })
 
