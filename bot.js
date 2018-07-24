@@ -89,18 +89,10 @@ bot.on('message', (context) => {
 				database.users.setState(context.update.message.from.id,processed.nextState).catch(err => logger.error(err));
 			}
 		}).catch(err => logger.error(err));
+	}).catch(err => {
+		logger.log('message err')
 	});
-});
-bot.on('edited_message', (context) => {
-	database.users.getState(context.update.message.from.id).then(chat_state => {
-		bot_util.processMessage(context.update.edited_message, chat_state).then((processed) => {
-			context.reply(processed.response);
-			if(processed.nextState !== null) {
-				database.users.setState(context.update.message.from.id,processed.nextState).catch(err => logger.error(err));
-			}
-		}).catch(err => logger.error(err));
-	});
-});
+})
 
 logger.log('Bot active. Performing startup checks.');
 
