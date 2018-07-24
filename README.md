@@ -1,6 +1,6 @@
 ![hatsume](img/hatsume.png)
 
-# hatsume_bot
+# hatsume
 Telegram bot to act as a courier for Plex content requests.
 
 ## Running an instance
