@@ -86,4 +86,5 @@ $RECYCLE.BIN/
 *.lnk
 
 # Development
+.vscode/
 sync.sh
