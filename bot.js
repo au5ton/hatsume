@@ -11,6 +11,8 @@ var BOT_USERNAME;
 // Custom modules
 const bot_util = require('./lib/bot_util');
 const database = require('./lib/database');
+const imdb = require('./lib/content');
+const plexmediaserver = require('./lib/plex');
 const User = require('./lib/classes/User');
 const Request = require('./lib/classes/Request');
 
@@ -106,3 +108,40 @@ bot.telegram.getMe().then((r) => {
 	logger.error('Telegram bot failed to start polling:\n',r);
 	process.exit();
 });
+
+logger.warn('Is our database connection good?');
+database.users.get('telegram_handle','durov').then(user => {
+	logger.success('Database connection good')
+}).catch(err => {
+	logger.error('Database connection failed: \n', err)
+})
+
+logger.warn('Is our OMDb connection good?');
+imdb.testIMDBConnection().then(tuple => {
+	if(tuple.status === 'good') {
+		logger.success('OMDb connection good.')
+	}
+	else {
+		logger.error('OMDb connection failed: \n', tuple.err)
+	}
+})
+
+logger.warn('Is our TheTVDB connection good?');
+imdb.testTVDBConnection().then(tuple => {
+	if(tuple.status === 'good') {
+		logger.success('TheTVDB connection good.')
+	}
+	else {
+		logger.error('TheTVDB connection failed: \n', tuple.err)
+	}
+})
+
+logger.warn('Is our Plex connection good?');
+plexmediaserver.testConnection().then(tuple => {
+	if(tuple.status === 'good') {
+		logger.success('Plex connection good.')
+	}
+	else {
+		logger.error('Plex connection failed: \n', tuple.err)
+	}
+})
