@@ -17,10 +17,10 @@ const content = require('./lib/content');
 const User = require('./lib/classes/User');
 const Request = require('./lib/classes/Request');
 
-content.getContentInfoFromIMDBId('tt2250912').then(request => {
-    logger.log(request)
-    logger.log(request instanceof Request)
-});
+// content.getContentInfoFromIMDBId('tt2250912').then(request => {
+//     logger.log(request)
+//     logger.log(request instanceof Request)
+// });
 
 // const mysql = require('mysql');
 // var pool = mysql.createPool({
@@ -97,3 +97,14 @@ content.getContentInfoFromIMDBId('tt2250912').then(request => {
 // })).then(info => {
 //     logger.success('done');
 // }).catch(err => logger.error(err));
+
+
+// database.requests.getAll().then(requests => {
+//     logger.log(requests);
+// })
+
+//database.requests.removeOneByIds(80379146, 'tt0000001').then(info => {logger.log(info)})
+
+// database.requests.getOneByIds(0, 'tt0000001').then(request => {
+//     logger.log(request);
+// })
