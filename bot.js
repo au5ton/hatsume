@@ -4,6 +4,7 @@ const logger = require('au5ton-logger');
 logger.setOption('prefix_date',true);
 const prettyMs = require('pretty-ms');
 const VERSION = require('./package').version;
+const CronJob = require('cron').CronJob;
 
 const START_TIME = new Date();
 var BOT_USERNAME;
@@ -13,11 +14,13 @@ const bot_util = require('./lib/bot_util');
 const database = require('./lib/database');
 const imdb = require('./lib/content');
 const plexmediaserver = require('./lib/plex');
+const notify = require('./lib/notify');
 const User = require('./lib/classes/User');
 const Request = require('./lib/classes/Request');
 
 // Create a bot that uses 'polling' to fetch new updates
 const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN);
+var job = null;
 
 process.on('unhandledRejection', r => logger.error('unhandledRejection: ',r.stack,'\n',r));
 
@@ -103,7 +106,6 @@ bot.on('message', (context) => {
 })
 
 logger.log('Bot active. Performing startup checks.');
-
 let promises = [];
 
 promises.push(new Promise((resolve, reject) => {
@@ -187,4 +189,10 @@ Promise.all(promises).then(results => {
 	else {
 		logger.success(checks_passed,'/',results.length,' tests passed.')
 	}
+
+	// Safe to check
+	// Check for satisfied requests every hour
+	//0 * * * *
+	job = new CronJob('0 * * * *', notify.job, notify.stop, true, 'America/Chicago');
+
 });
