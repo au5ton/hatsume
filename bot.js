@@ -30,9 +30,12 @@ bot.hears(new RegExp('\/start|\/start@' + BOT_USERNAME), (context) => {
 		if(chat.type === 'private') {
 
 			// Give introduction and help with commands
-			context.reply('Hello', {
-		  	  disable_web_page_preview: true
-			});
+			context.reply('Hello, I am Hastume. \n'
+			+'If you want to make a request for something to be added to Plex, you\'ve come to the right place. '
+			+'First things first, I need to verify that you actually have access to it already. '
+			+'To start this process, use the /enroll command. '
+			+'Once you\'re enrolled, you\'ll be able to make requests with the /makerequest command. '
+			+'During any of these operations, you can use the /cancel command to stop and do something else.');
 		}
 	}).catch((err) => {
 		//
@@ -101,7 +104,7 @@ bot.on('message', (context) => {
 
 		}).catch(err => logger.error(err));
 	}).catch(err => {
-		logger.log('message err')
+		logger.error('bot.on(message) failed for some weird reason: ',err)
 	});
 })
 
