@@ -86,7 +86,7 @@ bot.hears(new RegExp('\/unsubscribe|\/unsubscribe@' + BOT_USERNAME), (context) =
 bot.on('message', (context) => {
 	database.users.getState(context.update.message.from.id).then(chat_state => {
 		bot_util.processMessage(context.update.message, chat_state).then((processed) => {
-			context.reply(processed.response);
+			context.reply(processed.response, processed.responseOptions);
 			if(processed.nextState !== null) {
 				database.users.setState(context.update.message.from.id,processed.nextState).catch(err => logger.error(err));
 			}
