@@ -98,50 +98,87 @@ bot.on('message', (context) => {
 
 logger.log('Bot active. Performing startup checks.');
 
-logger.warn('Is our Telegram token valid?');
-bot.telegram.getMe().then((r) => {
-	//doesn't matter who we are, we're good
-	logger.success('Telegram token valid for @',r.username);
-	BOT_USERNAME = r.username;
-	bot.startPolling();
-}).catch((r) => {
-	logger.error('Telegram bot failed to start polling:\n',r);
-	process.exit();
+let promises = [];
+
+promises.push(new Promise((resolve, reject) => {
+	logger.ind().warn('Is our Telegram token valid?');
+	bot.telegram.getMe().then((r) => {
+		//doesn't matter who we are, we're good
+		logger.ind().success('Telegram token valid for @',r.username);
+		resolve('passed');
+		BOT_USERNAME = r.username;
+		bot.startPolling();
+	}).catch((r) => {
+		resolve('failed')
+	});
+}));
+
+promises.push(new Promise((resolve, reject) => {
+	logger.ind().warn('Is our database connection good?');
+	database.users.get('telegram_handle','durov').then(user => {
+		logger.ind().success('Database connection good');
+		resolve('passed')
+	}).catch(err => {
+		logger.ind().error('Database connection failed: \n', err)
+		resolve('failed')
+	})
+}))
+
+promises.push(new Promise((resolve, reject) => {
+	logger.ind().warn('Is our OMDb connection good?');
+	imdb.testIMDBConnection().then(tuple => {
+		if(tuple.status === 'good') {
+			logger.ind().success('OMDb connection good.');
+			resolve('passed')
+		}
+		else {
+			logger.ind().error('OMDb connection failed: \n', tuple.err)
+			resolve('failed')
+		}
+	})
+}))
+
+promises.push(new Promise((resolve, reject) => {
+	logger.ind().warn('Is our TheTVDB connection good?');
+	imdb.testTVDBConnection().then(tuple => {
+		if(tuple.status === 'good') {
+			logger.ind().success('TheTVDB connection good.');
+			resolve('passed')
+		}
+		else {
+			logger.ind().error('TheTVDB connection failed: \n', tuple.err)
+			resolve('failed')
+		}
+	})
+}))
+
+promises.push(new Promise((resolve, reject) => {
+	logger.ind().warn('Is our Plex connection good?');
+	plexmediaserver.testConnection().then(tuple => {
+		if(tuple.status === 'good') {
+			logger.ind().success('Plex connection good.');
+			resolve('passed')
+		}
+		else {
+			logger.ind().error('Plex connection failed: \n', tuple.err)
+			resolve('failed')
+		}
+	})
+}))
+
+Promise.all(promises).then(results => {
+	let checks_passed = 0;
+	for(let i in results) {
+		if(results[i] === 'passed') {
+			checks_passed++;
+		}
+	}
+	if(results.length - checks_passed > 0) {
+		logger.warn(checks_passed,'/',results.length,' tests passed.')
+		logger.warn('Exiting...');
+		process.exit()
+	}
+	else {
+		logger.success(checks_passed,'/',results.length,' tests passed.')
+	}
 });
-
-logger.warn('Is our database connection good?');
-database.users.get('telegram_handle','durov').then(user => {
-	logger.success('Database connection good')
-}).catch(err => {
-	logger.error('Database connection failed: \n', err)
-})
-
-logger.warn('Is our OMDb connection good?');
-imdb.testIMDBConnection().then(tuple => {
-	if(tuple.status === 'good') {
-		logger.success('OMDb connection good.')
-	}
-	else {
-		logger.error('OMDb connection failed: \n', tuple.err)
-	}
-})
-
-logger.warn('Is our TheTVDB connection good?');
-imdb.testTVDBConnection().then(tuple => {
-	if(tuple.status === 'good') {
-		logger.success('TheTVDB connection good.')
-	}
-	else {
-		logger.error('TheTVDB connection failed: \n', tuple.err)
-	}
-})
-
-logger.warn('Is our Plex connection good?');
-plexmediaserver.testConnection().then(tuple => {
-	if(tuple.status === 'good') {
-		logger.success('Plex connection good.')
-	}
-	else {
-		logger.error('Plex connection failed: \n', tuple.err)
-	}
-})
