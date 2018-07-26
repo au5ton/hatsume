@@ -90,6 +90,12 @@ bot.on('message', (context) => {
 			if(processed.nextState !== null) {
 				database.users.setState(context.update.message.from.id,processed.nextState).catch(err => logger.error(err));
 			}
+
+			// Notify channel
+			if(processed.pushChannel === true) {
+				bot.telegram.sendMessage(process.env.TELEGRAM_CHANNEL_ID, processed.channelPayload, processed.responseOptions)
+			}
+
 		}).catch(err => logger.error(err));
 	}).catch(err => {
 		logger.log('message err')
