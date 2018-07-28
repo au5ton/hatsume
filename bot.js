@@ -193,9 +193,9 @@ Promise.all(promises).then(results => {
 	}
 
 	// Safe to check
-	// Check for satisfied requests every hour
-	// 0 * * * *
-	job = new CronJob('0 * * * *', () => {
+	// Check for satisfied requests every 20 minutes
+	// */20 * * * *
+	job = new CronJob('*/20 * * * *', () => {
 		
 		// calculate filled requests
 		notify.filledRequests().then(filled => {
