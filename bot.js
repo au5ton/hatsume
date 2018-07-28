@@ -194,11 +194,30 @@ Promise.all(promises).then(results => {
 
 	// Safe to check
 	// Check for satisfied requests every hour
-	//0 * * * *
+	// 0 * * * *
 	job = new CronJob('0 * * * *', () => {
 		
-		// do things with notify.job
+		// calculate filled requests
+		notify.filledRequests().then(filled => {
+			for(let i in filled) {
+				bot.telegram.sendMessage(filled[i]['telegram_id'], '⚡️ <b>'+filled[i]['content_name']+(filled[i]['start_year'] === null ? '':' ('+filled[i]['start_year']+')')+' has been added!</b> (＾▽＾)', {
+					parse_mode: 'html',
+					disable_web_page_preview: true
+				})
+			}
+			for(let i in filled) {
+				database.requests.removeOneByIds(filled[i]['telegram_id'], 'content_name', filled[i]['content_name']).then(info => {
+					console.log('Removed '+filled[i]['telegram_id']+'/'+filled[i]['content_name']+' from the database')
+				})
+				.catch(err => {
+					console.log('Failed to remove '+filled[i]['telegram_id']+'/'+filled[i]['content_name']+' from the database')
+				})
+			}
+		})
+		
 
 	}, notify.stop, true, 'America/Chicago');
+
+	
 
 });

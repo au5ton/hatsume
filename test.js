@@ -15,6 +15,8 @@ process.on('unhandledRejection', r => console.error('unhandledRejection: ',r.sta
 // Custom modules
 const database = require('./lib/database');
 const content = require('./lib/content');
+const plex = require('./lib/plex');
+const notify = require('./lib/notify');
 const User = require('./lib/classes/User');
 const Request = require('./lib/classes/Request');
 
@@ -37,47 +39,26 @@ let pms = new PlexAPI({
 });
 
 // lookup movie by imdb id
-/*
-pms.query('/library/sections').then(response => {
-    
-    //console.log(response.MediaContainer.Directory)
-    let sections = response.MediaContainer.Directory;
-    for(let i in sections) {
-        if(sections[i]['type'] === 'movie') {
-            pms.query('/library/sections/'+sections[i]['key']+'/all').then(response => {
-                //console.log(response)
 
-                let movies = response.MediaContainer.Metadata;
-                for(let i in movies) {
-                    //console.log(movies[i])
-                }
-                //console.log(movies[0])
-                //console.log(movies[1])
-                pms.query(movies[0]['key']).then(response => {
-                    console.log(response.MediaContainer.Metadata) //extended metadata
+// plex.getAllLocalMovies().then(movies => {
+//     console.table(movies)
+// })
 
-                    //response.MediaContainer.Metadata[0].guid contains imdb id
+// plex.getAllLocalTVShows().then(shows => {
+//     console.table(shows)
+// })
 
-                })
+// const _IMDB = require('imdb-api');
+// const imdb = new _IMDB.Client({apiKey: process.env.OMDB_API_KEY});
+// const _TVDB = require('node-tvdb');
+// const tvdb = new _TVDB(process.env.THETVDB_API_KEY);
+// const compare = require('string-similarity').compareTwoStrings;
 
-            }).catch(err => {
-                console.error(err)
-            })
-        }
-        // else if(sections[i]['type'] === 'show') {
-        //     pms.query('/library/sections/'+sections[i]['key']).then(response => {
-        //         console.log(response)
-        //     }).catch(err => {
-        //         console.error(err)
-        //     })
-        // }
-    }
-
-}).catch(err => {
-    console.error('Error connecting to PMS: ', err)
-});
-*/
-
+// tvdb.getSeriesByImdbId('tt5249462').then(response => {
+//     console.log(response)
+// }).catch(err => {
+//     console.log(err.response)
+// })
 
 // pms.query('/library/sections').then(response => {
     
@@ -90,32 +71,38 @@ pms.query('/library/sections').then(response => {
 //                 //console.log(response)
 
 //                 let shows = response.MediaContainer.Metadata;
-//                 for(let i in shows) {
-//                     //console.log(movies[i])
-//                 }
 //                 console.log(shows[0])
-//                 //console.log(movies[1])
-//                 pms.query('/library/metadata/'+shows[0]['ratingKey']).then(response => {
-//                     console.log(response) //extended metadata
-//                     //let meta = response.MediaContainer.Metadata
-
-//                     //response.MediaContainer.Metadata[0].guid contains imdb id
-
-//                 })
+//                 console.log(shows[1])
+//                 // for(let i in shows) {
+//                 //     tvdb.getSeriesByName(shows[i]['title']).then(tvdb_entry => {
+//                 //         let dice = compare(shows[i]['title'],tvdb_entry[0].seriesName)
+//                 //         if(dice < 1) {
+//                 //             console.warn(shows[i]['title']+' <=[ '+dice+' ]=> '+tvdb_entry[0].seriesName)
+//                 //         }
+//                 //         else {
+//                 //             console.log(shows[i]['title']+' <=[ '+dice+' ]=> '+tvdb_entry[0].seriesName)
+//                 //         }
+//                 //     }).catch(err => {
+//                 //         if(err.response.status === 404) {
+//                 //             console.warn(shows[i]['title']+' 404')
+//                 //         }
+//                 //         else {
+//                 //             console.error(err)
+//                 //         }
+//                 //     })
+//                 // }
 
 //             }).catch(err => {
 //                 console.error(err)
 //             })
 //         }
 //     }
+// })
 
 // }).catch(err => {
 //     console.error('Error connecting to PMS: ', err)
 // });
-const _IMDB = require('imdb-api');
-const imdb = new _IMDB.Client({apiKey: process.env.OMDB_API_KEY});
-const _TVDB = require('node-tvdb');
-const tvdb = new _TVDB(process.env.THETVDB_API_KEY);
+
 
 // Erased (2016) anime: tt5249462
 // Erased (2017) live-action: tt7573686
@@ -142,3 +129,8 @@ const tvdb = new _TVDB(process.env.THETVDB_API_KEY);
 // database.requests.getAll().then(response => {
 //     console.log(response)
 // })
+
+notify.filledRequests().then(filled => {
+    console.log(filled)
+    process.exit()
+})

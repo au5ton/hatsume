@@ -28,6 +28,7 @@
     "node-tvdb": "^4.1.0",
     "plex-api": "^5.2.0",
     "pretty-ms": "^3.2.0",
+    "string-similarity": "^1.2.0",
     "telegraf": "^3.22.1",
     "xml2json": "^0.11.2"
   }
