@@ -103,7 +103,7 @@ bot.on('message', (context) => {
 
 		}).catch(err => console.error(err));
 	}).catch(err => {
-		console.error('bot.on(message) failed for some weird reason: ',err)
+		//console.error('bot.on(message) failed for some weird reason: ',err)
 	});
 })
 
@@ -195,6 +195,10 @@ Promise.all(promises).then(results => {
 	// Safe to check
 	// Check for satisfied requests every hour
 	//0 * * * *
-	job = new CronJob('0 * * * *', notify.job, notify.stop, true, 'America/Chicago');
+	job = new CronJob('0 * * * *', () => {
+		
+		// do things with notify.job
+
+	}, notify.stop, true, 'America/Chicago');
 
 });
