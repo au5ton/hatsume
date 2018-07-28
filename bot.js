@@ -184,12 +184,12 @@ Promise.all(promises).then(results => {
 		}
 	}
 	if(results.length - checks_passed > 0) {
-		console.warn(checks_passed,'/',results.length,' tests passed.')
+		console.warn(checks_passed+'/'+results.length+' tests passed.')
 		console.warn('Exiting...');
 		process.exit()
 	}
 	else {
-		console.success(checks_passed,'/',results.length,' tests passed.')
+		console.success(checks_passed+'/'+results.length+' tests passed.')
 	}
 
 	// Safe to check

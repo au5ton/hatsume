@@ -3,7 +3,6 @@
 require('dotenv').config(); //get the environment variables described in .env
 const Telegraf = require('telegraf')
 require('au5ton-logger')();
-console.setOption('prefix_date',true);
 const PlexAPI = require('plex-api');
 const os = require('os')
 
@@ -37,27 +36,109 @@ let pms = new PlexAPI({
     options: app_options
 });
 
+// lookup movie by imdb id
+/*
 pms.query('/library/sections').then(response => {
     
     //console.log(response.MediaContainer.Directory)
-    let sections = sections.MediaContainer.Directory;
+    let sections = response.MediaContainer.Directory;
     for(let i in sections) {
-        if(section[i]['type'] === 'movie') {
-            pms.query('/library/sections/'+section[i]['key']).then(response => {
-                console.log(response)
+        if(sections[i]['type'] === 'movie') {
+            pms.query('/library/sections/'+sections[i]['key']+'/all').then(response => {
+                //console.log(response)
+
+                let movies = response.MediaContainer.Metadata;
+                for(let i in movies) {
+                    //console.log(movies[i])
+                }
+                //console.log(movies[0])
+                //console.log(movies[1])
+                pms.query(movies[0]['key']).then(response => {
+                    console.log(response.MediaContainer.Metadata) //extended metadata
+
+                    //response.MediaContainer.Metadata[0].guid contains imdb id
+
+                })
+
             }).catch(err => {
                 console.error(err)
             })
         }
-        else if(section[i]['type'] === 'show') {
-            pms.query('/library/sections/'+section[i]['key']).then(response => {
-                console.log(response)
-            }).catch(err => {
-                console.error(err)
-            })
-        }
+        // else if(sections[i]['type'] === 'show') {
+        //     pms.query('/library/sections/'+sections[i]['key']).then(response => {
+        //         console.log(response)
+        //     }).catch(err => {
+        //         console.error(err)
+        //     })
+        // }
     }
 
 }).catch(err => {
-    reject('Error connecting to PMS: ', err)
+    console.error('Error connecting to PMS: ', err)
 });
+*/
+
+
+// pms.query('/library/sections').then(response => {
+    
+//     //console.log(response.MediaContainer.Directory)
+//     let sections = response.MediaContainer.Directory;
+//     //console.log(sections)
+//     for(let i in sections) {
+//         if(sections[i]['type'] === 'show') {
+//             pms.query('/library/sections/'+sections[i]['key']+'/all').then(response => {
+//                 //console.log(response)
+
+//                 let shows = response.MediaContainer.Metadata;
+//                 for(let i in shows) {
+//                     //console.log(movies[i])
+//                 }
+//                 console.log(shows[0])
+//                 //console.log(movies[1])
+//                 pms.query('/library/metadata/'+shows[0]['ratingKey']).then(response => {
+//                     console.log(response) //extended metadata
+//                     //let meta = response.MediaContainer.Metadata
+
+//                     //response.MediaContainer.Metadata[0].guid contains imdb id
+
+//                 })
+
+//             }).catch(err => {
+//                 console.error(err)
+//             })
+//         }
+//     }
+
+// }).catch(err => {
+//     console.error('Error connecting to PMS: ', err)
+// });
+const _IMDB = require('imdb-api');
+const imdb = new _IMDB.Client({apiKey: process.env.OMDB_API_KEY});
+const _TVDB = require('node-tvdb');
+const tvdb = new _TVDB(process.env.THETVDB_API_KEY);
+
+// Erased (2016) anime: tt5249462
+// Erased (2017) live-action: tt7573686
+// Spider-Man (1967): tt0061301
+// Spider-Man (1994): tt0112175
+
+// imdb.get({id: 'tt5249462'}).then(response => {
+//     console.log(response['title'] + ' ' + response['start_year'])
+//     tvdb.getSeriesByImdbId(response['imdbid']).then(response => {
+//         console.log(response)
+//     }).catch(err => {
+//         console.log(err.response)
+//     })
+
+//     //console.log(response)
+// })
+
+// content.getTVDBIdFromUrl('https://www.thetvdb.com/series/boku-no-pico').then(id => {
+//     console.log(id)
+// }).catch(err => {
+//     console.error(err)
+// })
+
+// database.requests.getAll().then(response => {
+//     console.log(response)
+// })
