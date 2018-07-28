@@ -2,15 +2,15 @@
 
 require('dotenv').config(); //get the environment variables described in .env
 const Telegraf = require('telegraf')
-const logger = require('au5ton-logger');
-logger.setOption('prefix_date',true);
+require('au5ton-logger')();
+console.setOption('prefix_date',true);
 const PlexAPI = require('plex-api');
 const os = require('os')
 
 // Create a bot that uses 'polling' to fetch new updates
 //const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN);
 
-process.on('unhandledRejection', r => logger.error('unhandledRejection: ',r.stack,'\n',r));
+process.on('unhandledRejection', r => console.error('unhandledRejection: ',r.stack,'\n',r));
 
 
 // Custom modules
@@ -39,21 +39,21 @@ let pms = new PlexAPI({
 
 pms.query('/library/sections').then(response => {
     
-    //logger.log(response.MediaContainer.Directory)
+    //console.log(response.MediaContainer.Directory)
     let sections = sections.MediaContainer.Directory;
     for(let i in sections) {
         if(section[i]['type'] === 'movie') {
             pms.query('/library/sections/'+section[i]['key']).then(response => {
-                logger.log(response)
+                console.log(response)
             }).catch(err => {
-                logger.error(err)
+                console.error(err)
             })
         }
         else if(section[i]['type'] === 'show') {
             pms.query('/library/sections/'+section[i]['key']).then(response => {
-                logger.log(response)
+                console.log(response)
             }).catch(err => {
-                logger.error(err)
+                console.error(err)
             })
         }
     }

@@ -1,7 +1,6 @@
 require('dotenv').config(); //get the environment variables described in .env
 const Telegraf = require('telegraf')
-const logger = require('au5ton-logger');
-logger.setOption('prefix_date',true);
+require('au5ton-logger')();
 const prettyMs = require('pretty-ms');
 const VERSION = require('./package').version;
 const CronJob = require('cron').CronJob;
@@ -22,7 +21,7 @@ const Request = require('./lib/classes/Request');
 const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN);
 var job = null;
 
-process.on('unhandledRejection', r => logger.error('unhandledRejection: ',r.stack,'\n',r));
+process.on('unhandledRejection', r => console.error('unhandledRejection: ',r.stack,'\n',r));
 
 // Basic commands
 bot.hears(new RegExp('\/start|\/start@' + BOT_USERNAME), (context) => {
@@ -57,7 +56,7 @@ bot.hears(new RegExp('\/enroll|\/enroll@' + BOT_USERNAME), (context) => {
 					if(myUser.chat_state === 0) {
 						database.users.setState(myUser.telegram_id, 1).then(info => {
 							context.reply('Please send your Plex.tv username (or email if you don\'t have one).');
-						}).catch(err => logger.error(err));
+						}).catch(err => console.error(err));
 					}
 					else {
 						context.reply('Please send your Plex.tv username (or email if you don\'t have one).');
@@ -66,7 +65,7 @@ bot.hears(new RegExp('\/enroll|\/enroll@' + BOT_USERNAME), (context) => {
 				else {
 					context.reply('You\'re already enrolled.');
 				}
-			}).catch(err => logger.error(err));;
+			}).catch(err => console.error(err));;
 		}
 		else {
 			database.users.init(context.update.message.from.id, context.update.message.from.first_name, context.update.message.from.username).then(info => {
@@ -94,7 +93,7 @@ bot.on('message', (context) => {
 		bot_util.processMessage(context.update.message, chat_state).then((processed) => {
 			context.reply(processed.response, processed.responseOptions);
 			if(processed.nextState !== null) {
-				database.users.setState(context.update.message.from.id,processed.nextState).catch(err => logger.error(err));
+				database.users.setState(context.update.message.from.id,processed.nextState).catch(err => console.error(err));
 			}
 
 			// Notify channel
@@ -102,20 +101,20 @@ bot.on('message', (context) => {
 				bot.telegram.sendMessage(process.env.TELEGRAM_CHANNEL_ID, processed.channelPayload, processed.responseOptions)
 			}
 
-		}).catch(err => logger.error(err));
+		}).catch(err => console.error(err));
 	}).catch(err => {
-		logger.error('bot.on(message) failed for some weird reason: ',err)
+		console.error('bot.on(message) failed for some weird reason: ',err)
 	});
 })
 
-logger.log('Bot active. Performing startup checks.');
+console.log('Bot active. Performing startup checks.');
 let promises = [];
 
 promises.push(new Promise((resolve, reject) => {
-	logger.ind().warn('Is our Telegram token valid?');
+	console.ind().warn('Is our Telegram token valid?');
 	bot.telegram.getMe().then((r) => {
 		//doesn't matter who we are, we're good
-		logger.ind().success('Telegram token valid for @',r.username);
+		console.ind().success('Telegram token valid for @',r.username);
 		resolve('passed');
 		BOT_USERNAME = r.username;
 		bot.startPolling();
@@ -125,53 +124,53 @@ promises.push(new Promise((resolve, reject) => {
 }));
 
 promises.push(new Promise((resolve, reject) => {
-	logger.ind().warn('Is our database connection good?');
+	console.ind().warn('Is our database connection good?');
 	database.users.get('telegram_handle','durov').then(user => {
-		logger.ind().success('Database connection good');
+		console.ind().success('Database connection good');
 		resolve('passed')
 	}).catch(err => {
-		logger.ind().error('Database connection failed: \n', err)
+		console.ind().error('Database connection failed: \n', err)
 		resolve('failed')
 	})
 }))
 
 promises.push(new Promise((resolve, reject) => {
-	logger.ind().warn('Is our OMDb connection good?');
+	console.ind().warn('Is our OMDb connection good?');
 	imdb.testIMDBConnection().then(tuple => {
 		if(tuple.status === 'good') {
-			logger.ind().success('OMDb connection good.');
+			console.ind().success('OMDb connection good.');
 			resolve('passed')
 		}
 		else {
-			logger.ind().error('OMDb connection failed: \n', tuple.err)
+			console.ind().error('OMDb connection failed: \n', tuple.err)
 			resolve('failed')
 		}
 	})
 }))
 
 promises.push(new Promise((resolve, reject) => {
-	logger.ind().warn('Is our TheTVDB connection good?');
+	console.ind().warn('Is our TheTVDB connection good?');
 	imdb.testTVDBConnection().then(tuple => {
 		if(tuple.status === 'good') {
-			logger.ind().success('TheTVDB connection good.');
+			console.ind().success('TheTVDB connection good.');
 			resolve('passed')
 		}
 		else {
-			logger.ind().error('TheTVDB connection failed: \n', tuple.err)
+			console.ind().error('TheTVDB connection failed: \n', tuple.err)
 			resolve('failed')
 		}
 	})
 }))
 
 promises.push(new Promise((resolve, reject) => {
-	logger.ind().warn('Is our Plex connection good?');
+	console.ind().warn('Is our Plex connection good?');
 	plexmediaserver.testConnection().then(tuple => {
 		if(tuple.status === 'good') {
-			logger.ind().success('Plex connection good.');
+			console.ind().success('Plex connection good.');
 			resolve('passed')
 		}
 		else {
-			logger.ind().error('Plex connection failed: \n', tuple.err)
+			console.ind().error('Plex connection failed: \n', tuple.err)
 			resolve('failed')
 		}
 	})
@@ -185,12 +184,12 @@ Promise.all(promises).then(results => {
 		}
 	}
 	if(results.length - checks_passed > 0) {
-		logger.warn(checks_passed,'/',results.length,' tests passed.')
-		logger.warn('Exiting...');
+		console.warn(checks_passed,'/',results.length,' tests passed.')
+		console.warn('Exiting...');
 		process.exit()
 	}
 	else {
-		logger.success(checks_passed,'/',results.length,' tests passed.')
+		console.success(checks_passed,'/',results.length,' tests passed.')
 	}
 
 	// Safe to check
