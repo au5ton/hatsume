@@ -33,6 +33,10 @@ Hatsume is written in Node.js v10.x, however she might work on lower versions. K
 <img alt="screenshot2" src="img/screenshot2.png" width=480>
 
 
+## Operation
+
+![integration diagram](./img/integration_diagram.svg)
+
 ##### Character
 
 *hatsume_bot is based off of Mei Hatsume, a character from Boku no Hero Academia (僕のヒーローアカデミア) and is property of [Bones Inc](http://www.bones.co.jp/).*
