@@ -3,6 +3,19 @@
 # hatsume
 Telegram bot to act as a courier for Plex content requests.
 
+## ️️⚠️ Road to v1.0.0 ⚠️
+
+Currently, hatsume is in a semi-functioning state. To get an idea of where I am in the project so far, here are the features that are to be completed by the v1.0.0 release.
+- [X] `/enroll`: register a user to hatsume's database. Accepts a Plex username to check against users on server maintainer's friend list, and against already enrolled users (no dupes)
+- [X] `/makerequest`: accepts IMDb or TVDb link(s) from an authenticated user and save it to the database. Query APIs to fill unknown data.
+- [X] Regularly poll Plex server and notify a user if their request has been filled
+- [X] Forward requests to a Telegram channel for the server maintainer to see
+- [] [Request specific season(s) of a show](https://github.com/au5ton/hatsume/issues/9)
+- [] [Opt-in to Sonarr notifications](https://github.com/au5ton/hatsume/issues/13)
+- [] [Implement maintainer tools](https://github.com/au5ton/hatsume/issues/4)
+- [] Other features maybe
+- [] Fix some bugs along the way
+
 ## Running an instance
 
 Hatsume is written in Node.js v10.x, however she might work on lower versions. Keep this in mind when deploying.
