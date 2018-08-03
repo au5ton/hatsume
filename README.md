@@ -10,11 +10,11 @@ Currently, hatsume is in a semi-functioning state. To get an idea of where I am 
 - [X] `/makerequest`: accepts IMDb or TVDb link(s) from an authenticated user and save it to the database. Query APIs to fill unknown data.
 - [X] Regularly poll Plex server and notify a user if their request has been filled
 - [X] Forward requests to a Telegram channel for the server maintainer to see
-- [] [Request specific season(s) of a show](https://github.com/au5ton/hatsume/issues/9)
-- [] [Opt-in to Sonarr notifications](https://github.com/au5ton/hatsume/issues/13)
-- [] [Implement maintainer tools](https://github.com/au5ton/hatsume/issues/4)
-- [] Other features maybe
-- [] Fix some bugs along the way
+- [ ] [Request specific season(s) of a show](https://github.com/au5ton/hatsume/issues/9)
+- [ ] [Opt-in to Sonarr notifications](https://github.com/au5ton/hatsume/issues/13)
+- [ ] [Implement maintainer tools](https://github.com/au5ton/hatsume/issues/4)
+- [ ] Other features maybe
+- [ ] Fix some bugs along the way
 
 ## Running an instance
 
