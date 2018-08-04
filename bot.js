@@ -4,6 +4,8 @@ require('au5ton-logger')();
 const prettyMs = require('pretty-ms');
 const VERSION = require('./package').version;
 const CronJob = require('cron').CronJob;
+const fetch = require('node-fetch')
+const querystring = require('querystring')
 
 const START_TIME = new Date();
 var BOT_USERNAME;
@@ -171,6 +173,25 @@ promises.push(new Promise((resolve, reject) => {
 		}
 		else {
 			console.ind().error('Plex connection failed: \n', tuple.err)
+			resolve('failed')
+		}
+	})
+}))
+
+promises.push(new Promise((resolve, reject) => {
+	console.ind().warn('Is our themoviedb.org connection good?')
+	// Test with "Finding Nemo" (example from TMDb API)
+	fetch('https://api.themoviedb.org/3/find/tt0266543?'+querystring.encode({
+		api_key: process.env.THEMOVIEDB_API_KEY,
+		external_source: 'imdb_id'
+	}))
+	.then(res => {
+		if(res.status === 200) {
+			console.ind().success('TMDb connection good.')
+			resolve('passed')
+		}
+		else {
+			console.ind().error('TMDb connection failed.')
 			resolve('failed')
 		}
 	})
