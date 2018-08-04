@@ -93,14 +93,19 @@ bot.hears(new RegExp('\/unsubscribe|\/unsubscribe@' + BOT_USERNAME), (context) =
 bot.on('message', (context) => {
 	database.users.getState(context.update.message.from.id).then(chat_state => {
 		bot_util.processMessage(context.update.message, chat_state).then((processed) => {
-			context.reply(processed.response, processed.responseOptions);
+			// Optionally respond with multiple things at once
+			for(let i in processed.responses) {
+				context.reply(processed.responses[i].text, processed.responses[i].options);
+				
+				// Notify channel
+				if(processed.responses[i].channelPayload !== undefined) {
+					bot.telegram.sendMessage(process.env.TELEGRAM_CHANNEL_ID, processed.responses[i].channelPayload, processed.responses[i].options)
+				}
+			}
+			
+			// You can only send it to one state at a time
 			if(processed.nextState !== null) {
 				database.users.setState(context.update.message.from.id,processed.nextState).catch(err => console.error(err));
-			}
-
-			// Notify channel
-			if(processed.pushChannel === true) {
-				bot.telegram.sendMessage(process.env.TELEGRAM_CHANNEL_ID, processed.channelPayload, processed.responseOptions)
 			}
 
 		}).catch(err => console.error(err));
