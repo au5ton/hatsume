@@ -114,6 +114,14 @@ bot.on('message', (context) => {
 	});
 })
 
+bot.on('update', (context) => {
+	if(context.update.callback_query) {
+		//React to user composition choices
+	}
+})
+
+
+
 console.log('Bot active. Performing startup checks.');
 let promises = [];
 
@@ -221,7 +229,7 @@ Promise.all(promises).then(results => {
 	// Safe to check
 	// Check for satisfied requests every 20 minutes
 	// */20 * * * *
-	job = new CronJob('*/20 * * * *', () => {
+	let job = new CronJob('*/20 * * * *', () => {
 		
 		// calculate filled requests
 		notify.filledRequests().then(filled => {
@@ -243,6 +251,11 @@ Promise.all(promises).then(results => {
 		
 
 	}, notify.stop, true, 'America/Chicago');
+
+	// Query DB every 2 seconds
+	let composition_checker = setInterval(() => {
+		// React to new compositions
+	},2000)
 
 	
 
