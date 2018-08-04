@@ -126,11 +126,11 @@ let pms = new PlexAPI({
 //     console.error(err)
 // })
 
-// database.requests.getAll().then(response => {
-//     console.log(response)
-// })
-
-notify.filledRequests().then(filled => {
-    console.log(filled)
-    process.exit()
+database.requests.getAll().then(response => {
+    console.log(response)
 })
+
+// notify.filledRequests().then(filled => {
+//     console.log(filled)
+//     process.exit()
+// })

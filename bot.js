@@ -114,13 +114,6 @@ bot.on('message', (context) => {
 	});
 })
 
-bot.on('update', (context) => {
-	if(context.update.callback_query) {
-		//React to user composition choices
-	}
-})
-
-
 
 console.log('Bot active. Performing startup checks.');
 let promises = [];
@@ -252,11 +245,168 @@ Promise.all(promises).then(results => {
 
 	}, notify.stop, true, 'America/Chicago');
 
-	// Query DB every 2 seconds
+	// Query DB every 4 seconds (I'd like to make this shorter, but I'd like to keep no more than one instance running at once)
 	let composition_checker = setInterval(() => {
+		console.log('doin the thing')
 		// React to new compositions
-	},2000)
+		database.requests.getMultiple('done_composing', false)
+		.then(requests => {
+			//Keep track of how many each user has, so when one is resolved elsewhere, we can react appropriately here
+			//First, we want to count how many the user has for this run
+			let users = new Set()
+			for(let i in requests) {
+				//If the user is defined, increment
+				if(persistent[requests[i]['telegram_id']]) {
+					persistent[requests[i]['telegram_id']].temp_count += 1
+				}
+				else {
+					persistent[requests[i]['telegram_id']] = compose_default()
+				}
+				users.add(requests[i]['telegram_id'])
+			}
+			//console.log(requests)
+			console.log(persistent)
 
-	
 
+			/**
+			 * When to send a new message out:
+			 * - When the amount of requests being composed changes
+			 * EXCEPT WHEN:
+			 * - count goes from 1 to 0 (completing all compositions)
+			 * - count goes from positive int to positive int (adding additional requests before you've completed the current set, theoretically impossible but let's write good code)
+			 */
+
+
+			// Something in this block causes an infinite loop that breaks this code and I'm way too tired to even come close to diagnosing it
+			// Something in this block causes an infinite loop that breaks this code and I'm way too tired to even come close to diagnosing it
+			// Something in this block causes an infinite loop that breaks this code and I'm way too tired to even come close to diagnosing it
+			// Something in this block causes an infinite loop that breaks this code and I'm way too tired to even come close to diagnosing it
+			// Something in this block causes an infinite loop that breaks this code and I'm way too tired to even come close to diagnosing it
+			for(let item of users) {
+				let last = persistent[item].last_composing_count;
+				let now = persistent[item].temp_count;
+				let delta = now - last;
+				// When the composition count has changed
+				if(delta != 0) {
+					// Amount of requests has changed: delta > 0 when more, delta < 0 when less
+					// Set currently_composing to oldest request (`requests` is always sorted ascending)
+
+					if(last === 1 && now === 0) {
+						// Completed the last composition
+						//TODO update chat_state to 3
+					}
+					else if(last > 0 && now > 0) {
+						// This shouldn't happen
+					}
+					else {
+						for(let i in requests) {
+							if(request[i]['telegram_id'] === item) {
+								persistent[item].currently_composing = request[i]
+								
+								// Interact with the user
+								bot.telegram.sendMessage(request[i]['telegram_id'],generateTVCompositionMessage(request[i]),{
+									parse_mode: 'html',
+									disable_web_page_preview: false,
+									reply_markup: generateInlineKeyboardMarkup(request[i])
+								})
+								.then(info => {
+									console.log(info)
+								})
+
+								break;
+							}
+						}
+					}
+				}
+				else if(delta === 0) {
+					// No change
+				}
+			}
+			console.log(users)
+
+			// Now we save the value and reset the counter for next time this is called
+			for(let item of users) {
+				console.log('reset counter??')
+				persistent[item].last_composing_count = persistent[item].temp_count;
+				persistent[item].temp_count = 0;
+			}
+
+			// Now, we've squared everything away with regards to updating the references we're about to work with
+			//If a change was made, then we should send another message asking for the next one, no?
+		})
+		.catch(err => {
+			if(err === 'error/requests.getmulitple: results array empty') {
+				// nothing out of the ordinary
+			}
+			else {
+				// ok, what fucked up?
+			}
+		})
+	},4000)
 });
+
+function generateTVCompositionMessage(request) {
+	const empty_char = '&#8203;'
+	const television = '📺';
+	
+	// just like: https://github.com/au5ton/Roboruri/blob/f032f6afad9dcb2b381ac9a4f5ee155c09d17daf/roboruri/bot_util.js#L394-L443
+	let message = '';
+	if(request['image'] && request['image'].startsWith('http')) {
+		message += '\n<a href=\"'+request['image']+'\">'+empty_char+'</a>';
+	}
+	message += television + ' <b>' + request['content_name'] + '</b>\n';
+	message += 'Please tap to check which seasons you\'re interested in. When you\'ve picked all that are applicable, press Done.';
+	return message
+}
+// [[{text: 'specials', data: 'specials'}]]
+function generateInlineKeyboardMarkup(request) {
+	let keyboard = []
+	let seasons = request['available_seasons'];
+	let wanted = request['desired_seasons'];
+	for(let i in seasons) {
+		let n = (season[i] < 10 ? 'S0'+season[i] : 'S'+season[i]); // make it 2 characters long for style
+		if(season[i] === 0) {
+			keyboard.push({
+				text: (wanted.includes(season[i]) ? 'Specials ☑️' : 'Specials ⬜️'),
+				data: season[i]
+			})
+		}
+		else {
+			keyboard.push({
+				// S01 ☑️
+				// S01 ⬜️
+				text: (wanted.includes(season[i]) ? n+' ☑️' : n+' ⬜️'),
+				data: season[i]
+			})
+		}
+	}
+	keyboard.push({
+		text: 'All',
+		data: 'all'
+	})
+	keyboard.push({
+		text: 'Done',
+		data: 'done'
+	})
+	return [keyboard];
+}
+function compose_default() {
+	return {
+		last_composing_count: 0,
+		temp_count: 0,
+		currently_composing: null, // Request object
+		change_made: false
+	}
+}
+// In-memory caching of user whereabouts
+var persistent = {
+	'0': compose_default() //durov
+};
+//  '{chat_id}/{message_id}' => request_id
+var message_to_request = new Map()
+
+bot.on('update', (context) => {
+	if(context.update.callback_query) {
+		//React to user composition choices
+	}
+})
