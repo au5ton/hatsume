@@ -249,7 +249,7 @@ Promise.all(promises).then(results => {
 
 	// Query DB every 4 seconds (I'd like to make this shorter, but I'd like to keep no more than one instance running at once)
 	let composition_checker = setInterval(() => {
-		console.log('composition_checker()')
+		//console.log('composition_checker()')
 		//console.log('doin the thing')
 		// React to new compositions
 		database.requests.getMultiple('done_composing', false)
@@ -333,7 +333,7 @@ function generateInlineKeyboardMarkup(request) {
 		if(seasons[i] === 0) {
 			keyboard.push({
 				text: (wanted.includes(seasons[i]) ? 'Specials ☑️' : 'Specials ⬜️'),
-				callback_data: 'S'+seasons[i]
+				callback_data: seasons[i]
 			})
 		}
 		else {
@@ -341,7 +341,7 @@ function generateInlineKeyboardMarkup(request) {
 				// S01 ☑️
 				// S01 ⬜️
 				text: (wanted.includes(seasons[i]) ? n+' ☑️' : n+' ⬜️'),
-				callback_data: 'S'+seasons[i]
+				callback_data: seasons[i]
 			})
 		}
 	}
@@ -361,12 +361,12 @@ function generateInlineKeyboardMarkup(request) {
 		matrix[i] = new Array(2).fill(0)
 	}
 	let i = 0;
-	console.log('matrix before: ',matrix)
+	//console.log('matrix before: ',matrix)
 	for(let r = 0; r < matrix.length; r++) {
 		for(let c = 0; c < matrix[r].length; c++) {
 			//console.log(keyboard[i])
 			matrix[r][c] = keyboard[i];
-			console.log(matrix[r][c])
+			//console.log(matrix[r][c])
 			i++;
 		}
 	}
@@ -379,7 +379,7 @@ function generateInlineKeyboardMarkup(request) {
 			}
 		}
 	}
-	console.log('matrix: ',matrix)
+	//console.log('matrix: ',matrix)
 
 	return {inline_keyboard: matrix};
 }
@@ -397,8 +397,26 @@ var persistent = {
 var message_to_request = new Map()
 
 bot.on('callback_query', (context) => {
-	// Explicit usage
-	context.telegram.answerCbQuery(context.callbackQuery.id,'request_id: '+message_to_request.get(context.callbackQuery.message.chat.id+'/'+context.callbackQuery.message.message_id))
+	
+	const request_id = message_to_request.get(context.callbackQuery.message.chat.id+'/'+context.callbackQuery.message.message_id)
+
+	//console.log(context.callbackQuery.message.chat.id+'/'+context.callbackQuery.message.message_id+' ==> '+request_id)
+
+	if(context.callbackQuery.message === undefined) {
+		context.telegram.answerCbQuery(context.callbackQuery.id,'Message too old. Use /cancel.')
+	}
+	else if(request_id === undefined) {
+		// server was probably restarted so message_to_request was cleared from memory
+		context.telegram.answerCbQuery(context.callbackQuery.id,'Use /cancel and try again')
+	}
+	else {
+
+		//context.callbackQuery.data can be an integer (for a season) or 'all' or 'done'
+
+		// logic code here
+
+		context.telegram.answerCbQuery(context.callbackQuery.id,'request_id: '+request_id+', ')
+	}
 
 	//https://core.telegram.org/bots/api#callbackquery
 	//context.callbackQuery.message is undefined if the message is too old
