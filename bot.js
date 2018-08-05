@@ -316,12 +316,31 @@ function generateTVCompositionMessage(request) {
 	
 	// just like: https://github.com/au5ton/Roboruri/blob/f032f6afad9dcb2b381ac9a4f5ee155c09d17daf/roboruri/bot_util.js#L394-L443
 	let message = '';
-	if(request['image'] && request['image'].startsWith('http')) {
+	if(request['image'] && request['image'].startsWith('http') && request['done_composing'] === false) {
 		message += '\n<a href=\"'+request['image']+'\">'+empty_char+'</a>';
 	}
 	message += television + ' <b>' + request['content_name'] + '</b>\n';
-	message += 'Please tap to check which seasons you\'re interested in. When you\'ve picked all that are applicable, press Done.';
+	if(request['done_composing'] === false) {
+		message += 'Please tap to check which seasons you\'re interested in. When you\'ve picked all that are applicable, press Done.';
+	}
+	else {
+		message += 'You\'ve completed your request for seasons '+prettySeasons(request['desired_seasons']);
+	}
 	return message
+}
+function prettySeasons(seasons) {
+	// seasons => [0,1,2,3,4,5]
+	let str = '';
+	for(let i in seasons) {
+		if(seasons[i] === 0) {
+			str += 'Specials, '
+		}
+		else {
+			str += seasons[i]+', '
+		}
+	}
+	str = str.substring(0, str.length-2) // chop off ', '
+	return str
 }
 // [[{text: 'specials', data: 'specials'}]]
 function generateInlineKeyboardMarkup(request) {
@@ -416,6 +435,59 @@ bot.on('callback_query', (context) => {
 
 		if(isNaN(parseInt(context.callbackQuery.data))) {
 			// if all or done
+			if(context.callbackQuery.data === 'all') {
+				// if all, set desired_seasons to be available_seasons
+				database.requests.getMultiple('request_id', request_id).then(r => {
+					r[0].desired_seasons = r[0].available_seasons // this is actually redundant but it makes reading easier
+					database.requests.update('request_id', request_id, {desired_seasons: JSON.stringify(r[0].desired_seasons)}).then(info => {
+						context.telegram.editMessageReplyMarkup(
+							context.callbackQuery.message.chat.id, 
+							context.callbackQuery.message.message_id, 
+							context.callbackQuery.inline_message_id, 
+							generateInlineKeyboardMarkup(r[0])
+						)
+						.then(info => {
+							context.telegram.answerCbQuery(context.callbackQuery.id, 'Updated')
+						})
+					})
+				})
+			}
+			else if(context.callbackQuery.data === 'done') {
+				// if done, set done_composing to true and remove the buttons from the original message
+				database.requests.getMultiple('request_id', request_id).then(r => {
+					// Set this so we can generated the correct composition message
+					r[0].done_composing = true
+					// Tell the user their input did something
+					context.telegram.answerCbQuery(context.callbackQuery.id, 'Completed')
+
+					// Set the request as done_composing
+					database.requests.update('request_id', request_id, {done_composing: true}).then(info => {
+
+						// Send a user from chat_state 4 to 2 again
+						database.users.setState(r[0]['telegram_id'], 2)
+
+						// Delete the original message we sent
+						context.telegram.deleteMessage(
+							context.callbackQuery.message.chat.id,
+							context.callbackQuery.message.message_id
+						)
+						.then(info => {
+							// Remove a reference to the deleted message
+							message_to_request.delete(context.callbackQuery.message.chat.id+'/'+context.callbackQuery.message.message_id)
+							
+							// Send a new message explaining that the user is done now
+							context.telegram.sendMessage(
+								context.callbackQuery.message.chat.id,
+								generateTVCompositionMessage(r[0]),{
+									parse_mode: 'html'
+								}
+							)
+						})
+					})
+
+					
+				})
+			}
 		}
 		else {
 			// the season choice
