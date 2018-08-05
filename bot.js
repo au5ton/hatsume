@@ -330,29 +330,53 @@ function generateInlineKeyboardMarkup(request) {
 	for(let i in seasons) {
 		let n = (seasons[i] < 10 ? 'S0'+seasons[i] : 'S'+seasons[i]); // make it 2 characters long for style
 		if(seasons[i] === 0) {
-			keyboard.push([{
+			keyboard.push({
 				text: (wanted.includes(seasons[i]) ? 'Specials ☑️' : 'Specials ⬜️'),
 				callback_data: 'S'+seasons[i]
-			}])
+			})
 		}
 		else {
-			keyboard.push([{
+			keyboard.push({
 				// S01 ☑️
 				// S01 ⬜️
 				text: (wanted.includes(seasons[i]) ? n+' ☑️' : n+' ⬜️'),
 				callback_data: 'S'+seasons[i]
-			}])
+			})
 		}
 	}
-	keyboard.push([{
+	keyboard.push({
 		text: 'All',
 		callback_data: 'all'
-	}])
-	keyboard.push([{
+	})
+	keyboard.push({
 		text: 'Done',
 		callback_data: 'done'
-	}])
-	return {inline_keyboard: keyboard};
+	})
+
+	//Resize (1,n) array to (2,n/2) array
+	matrix = new Array(Math.ceil(keyboard.length / 2)).fill(new Array(2).fill(0)); // Matrix should have exactly the same indexes as original array
+	let i = 0;
+	console.log('matrix before: ',matrix)
+	for(let r = 0; r < matrix.length; r++) {
+		for(let c = 0; c < matrix[r].length; c++) {
+			//console.log(keyboard[i])
+			matrix[r][c] = keyboard[i];
+			console.log(matrix[r][c])
+			i++;
+		}
+	}
+	i = 0;
+	//console.log('keyboard: ',keyboard)
+	console.log('matrix: ',matrix)
+	// for(let r = 0; r < matrix.length; r++) {
+	// 	for(let c = 0; c < matrix[r].length; c++) {
+	// 		if(matrix[r][c] === undefined) {
+	// 			matrix[r].splice(c,1); // remove the empty index that happens when keyboard.length is an odd number
+	// 		}
+	// 	}
+	// }
+
+	return {inline_keyboard: matrix};
 }
 function compose_default() {
 	return {
