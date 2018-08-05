@@ -107,7 +107,9 @@ bot.on('message', (context) => {
 			if(processed.nextState !== null) {
 				database.users.setState(context.update.message.from.id,processed.nextState).catch(err => console.error(err));
 			}
-
+			if(processed.extra === 'persistent_cancel') {
+				persistent[context.update.message.from.id] = {last: -1, now: -1};
+			}
 		}).catch(err => console.error(err));
 	}).catch(err => {
 		//console.error('bot.on(message) failed for some weird reason: ',err)
@@ -247,92 +249,39 @@ Promise.all(promises).then(results => {
 
 	// Query DB every 4 seconds (I'd like to make this shorter, but I'd like to keep no more than one instance running at once)
 	let composition_checker = setInterval(() => {
-		console.log('doin the thing')
+		console.log('composition_checker()')
+		//console.log('doin the thing')
 		// React to new compositions
 		database.requests.getMultiple('done_composing', false)
 		.then(requests => {
-			//Keep track of how many each user has, so when one is resolved elsewhere, we can react appropriately here
-			//First, we want to count how many the user has for this run
+			
+			// Get all users
 			let users = new Set()
 			for(let i in requests) {
-				//If the user is defined, increment
-				if(persistent[requests[i]['telegram_id']]) {
-					persistent[requests[i]['telegram_id']].temp_count += 1
-				}
-				else {
-					persistent[requests[i]['telegram_id']] = compose_default()
-				}
 				users.add(requests[i]['telegram_id'])
 			}
-			//console.log(requests)
-			console.log(persistent)
 
-
-			/**
-			 * When to send a new message out:
-			 * - When the amount of requests being composed changes
-			 * EXCEPT WHEN:
-			 * - count goes from 1 to 0 (completing all compositions)
-			 * - count goes from positive int to positive int (adding additional requests before you've completed the current set, theoretically impossible but let's write good code)
-			 */
-
-
-			// Something in this block causes an infinite loop that breaks this code and I'm way too tired to even come close to diagnosing it
-			// Something in this block causes an infinite loop that breaks this code and I'm way too tired to even come close to diagnosing it
-			// Something in this block causes an infinite loop that breaks this code and I'm way too tired to even come close to diagnosing it
-			// Something in this block causes an infinite loop that breaks this code and I'm way too tired to even come close to diagnosing it
-			// Something in this block causes an infinite loop that breaks this code and I'm way too tired to even come close to diagnosing it
 			for(let item of users) {
-				let last = persistent[item].last_composing_count;
-				let now = persistent[item].temp_count;
-				let delta = now - last;
-				// When the composition count has changed
-				if(delta != 0) {
-					// Amount of requests has changed: delta > 0 when more, delta < 0 when less
-					// Set currently_composing to oldest request (`requests` is always sorted ascending)
-
-					if(last === 1 && now === 0) {
-						// Completed the last composition
-						//TODO update chat_state to 3
-					}
-					else if(last > 0 && now > 0) {
-						// This shouldn't happen
-					}
-					else {
-						for(let i in requests) {
-							if(request[i]['telegram_id'] === item) {
-								persistent[item].currently_composing = request[i]
-								
-								// Interact with the user
-								bot.telegram.sendMessage(request[i]['telegram_id'],generateTVCompositionMessage(request[i]),{
-									parse_mode: 'html',
-									disable_web_page_preview: false,
-									reply_markup: generateInlineKeyboardMarkup(request[i])
-								})
-								.then(info => {
-									console.log(info)
-								})
-
-								break;
-							}
-						}
+				if(persistent[item] === undefined) {
+					persistent[item] = compose_default();
+				}
+				// Get their oldest request_id
+				for(let i = 0; i < requests.length; i++) {
+					if(requests[i]['telegram_id'] === item) {
+						persistent[item].now = requests[i]['request_id'];
+						break;
 					}
 				}
-				else if(delta === 0) {
-					// No change
-				}
 			}
-			console.log(users)
+			//console.log(persistent)
 
-			// Now we save the value and reset the counter for next time this is called
 			for(let item of users) {
-				console.log('reset counter??')
-				persistent[item].last_composing_count = persistent[item].temp_count;
-				persistent[item].temp_count = 0;
+				// If the oldest request_id
+				if(persistent[item].now !== persistent[item].last) {
+					console.magenta('new request: '+persistent[item].now)
+				}
+				persistent[item].last = persistent[item].now;
 			}
-
-			// Now, we've squared everything away with regards to updating the references we're about to work with
-			//If a change was made, then we should send another message asking for the next one, no?
 		})
 		.catch(err => {
 			if(err === 'error/requests.getmulitple: results array empty') {
@@ -392,10 +341,8 @@ function generateInlineKeyboardMarkup(request) {
 }
 function compose_default() {
 	return {
-		last_composing_count: 0,
-		temp_count: 0,
-		currently_composing: null, // Request object
-		change_made: false
+		last: -1,
+		now: -1
 	}
 }
 // In-memory caching of user whereabouts
