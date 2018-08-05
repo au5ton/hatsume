@@ -286,8 +286,9 @@ Promise.all(promises).then(results => {
 							disable_web_page_preview: false,
 							reply_markup: generateInlineKeyboardMarkup(r[0])
 						})
-						.then(info => {
-							console.magenta(info)
+						.then(message => {
+							console.log(message.chat.id+'/'+message.message_id+' => '+r[0].request_id)
+							message_to_request.set(message.chat.id+'/'+message.message_id, r[0].request_id)
 						})
 						.catch(err => {
 							console.error(err)
@@ -371,14 +372,14 @@ function generateInlineKeyboardMarkup(request) {
 	}
 	i = 0;
 	//console.log('keyboard: ',keyboard)
+	for(let r = 0; r < matrix.length; r++) {
+		for(let c = 0; c < matrix[r].length; c++) {
+			if(matrix[r][c] === undefined) {
+				matrix[r].splice(c,1); // remove the empty index that happens when keyboard.length is an odd number
+			}
+		}
+	}
 	console.log('matrix: ',matrix)
-	// for(let r = 0; r < matrix.length; r++) {
-	// 	for(let c = 0; c < matrix[r].length; c++) {
-	// 		if(matrix[r][c] === undefined) {
-	// 			matrix[r].splice(c,1); // remove the empty index that happens when keyboard.length is an odd number
-	// 		}
-	// 	}
-	// }
 
 	return {inline_keyboard: matrix};
 }
@@ -395,8 +396,18 @@ var persistent = {
 //  '{chat_id}/{message_id}' => request_id
 var message_to_request = new Map()
 
-bot.on('update', (context) => {
-	if(context.update.callback_query) {
-		//React to user composition choices
-	}
+bot.on('callback_query', (context) => {
+	// Explicit usage
+	context.telegram.answerCbQuery(context.callbackQuery.id,'request_id: '+message_to_request.get(context.callbackQuery.message.chat.id+'/'+context.callbackQuery.message.message_id))
+
+	//https://core.telegram.org/bots/api#callbackquery
+	//context.callbackQuery.message is undefined if the message is too old
+
+	// Doing this removes the buttons from the original message
+	//context.telegram.editMessageText(context.callbackQuery.message.chat.id, context.callbackQuery.message.message_id, context.callbackQuery.inline_message_id, '🔥')
+
+	
+	//
+	//context.telegram.editMessageReplyMarkup(context.callbackQuery.message.chat.id, context.callbackQuery.message.message_id, context.callbackQuery.inline_message_id, '🔥')
+	//console.log(context)
 })
