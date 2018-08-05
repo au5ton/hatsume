@@ -126,8 +126,40 @@ let pms = new PlexAPI({
 //     console.error(err)
 // })
 
-database.requests.getAll().then(response => {
-    console.log(response)
+function generateInlineKeyboardMarkup(request) {
+	let keyboard = []
+	let seasons = request['available_seasons'];
+	let wanted = request['desired_seasons'];
+	for(let i in seasons) {
+		let n = (seasons[i] < 10 ? 'S0'+seasons[i] : 'S'+seasons[i]); // make it 2 characters long for style
+		if(seasons[i] === 0) {
+			keyboard.push({
+				text: (wanted.includes(seasons[i]) ? 'Specials ☑️' : 'Specials ⬜️'),
+				callback_data: seasons[i]+''
+			})
+		}
+		else {
+			keyboard.push({
+				// S01 ☑️
+				// S01 ⬜️
+				text: (wanted.includes(seasons[i]) ? n+' ☑️' : n+' ⬜️'),
+				callback_data: seasons[i]+''
+			})
+		}
+	}
+	keyboard.push({
+		text: 'All',
+		callback_data: 'all'
+	})
+	keyboard.push({
+		text: 'Done',
+		callback_data: 'done'
+	})
+	return [keyboard];
+}
+
+database.requests.getMultiple('request_id',60).then(r => {
+    console.log(generateInlineKeyboardMarkup(r[0]))
 })
 
 // notify.filledRequests().then(filled => {

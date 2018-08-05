@@ -279,6 +279,21 @@ Promise.all(promises).then(results => {
 				// If the oldest request_id
 				if(persistent[item].now !== persistent[item].last) {
 					console.magenta('new request: '+persistent[item].now)
+					database.requests.getMultiple('request_id',persistent[item].now).then(r => {
+						// Interact with the user
+						bot.telegram.sendMessage(r[0]['telegram_id'],generateTVCompositionMessage(r[0]),{
+							parse_mode: 'html',
+							disable_web_page_preview: false,
+							reply_markup: generateInlineKeyboardMarkup(r[0])
+						})
+						.then(info => {
+							console.magenta(info)
+						})
+						.catch(err => {
+							console.error(err)
+							console.error(err.on.payload.reply_markup)
+						})
+					})
 				}
 				persistent[item].last = persistent[item].now;
 			}
@@ -313,31 +328,31 @@ function generateInlineKeyboardMarkup(request) {
 	let seasons = request['available_seasons'];
 	let wanted = request['desired_seasons'];
 	for(let i in seasons) {
-		let n = (season[i] < 10 ? 'S0'+season[i] : 'S'+season[i]); // make it 2 characters long for style
-		if(season[i] === 0) {
-			keyboard.push({
-				text: (wanted.includes(season[i]) ? 'Specials ☑️' : 'Specials ⬜️'),
-				data: season[i]
-			})
+		let n = (seasons[i] < 10 ? 'S0'+seasons[i] : 'S'+seasons[i]); // make it 2 characters long for style
+		if(seasons[i] === 0) {
+			keyboard.push([{
+				text: (wanted.includes(seasons[i]) ? 'Specials ☑️' : 'Specials ⬜️'),
+				callback_data: 'S'+seasons[i]
+			}])
 		}
 		else {
-			keyboard.push({
+			keyboard.push([{
 				// S01 ☑️
 				// S01 ⬜️
-				text: (wanted.includes(season[i]) ? n+' ☑️' : n+' ⬜️'),
-				data: season[i]
-			})
+				text: (wanted.includes(seasons[i]) ? n+' ☑️' : n+' ⬜️'),
+				callback_data: 'S'+seasons[i]
+			}])
 		}
 	}
-	keyboard.push({
+	keyboard.push([{
 		text: 'All',
-		data: 'all'
-	})
-	keyboard.push({
+		callback_data: 'all'
+	}])
+	keyboard.push([{
 		text: 'Done',
-		data: 'done'
-	})
-	return [keyboard];
+		callback_data: 'done'
+	}])
+	return {inline_keyboard: keyboard};
 }
 function compose_default() {
 	return {
