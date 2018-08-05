@@ -412,10 +412,51 @@ bot.on('callback_query', (context) => {
 	else {
 
 		//context.callbackQuery.data can be an integer (for a season) or 'all' or 'done'
+		//datatype will always be a string
 
-		// logic code here
+		if(isNaN(parseInt(context.callbackQuery.data))) {
+			// if all or done
+		}
+		else {
+			// the season choice
+			let n = parseInt(context.callbackQuery.data)
 
-		context.telegram.answerCbQuery(context.callbackQuery.id,'request_id: '+request_id+', ')
+			/*
+			Logic:
+			- if the season choice already exists, remove it from the desired_seasons
+			- otherwise, add it to the array
+			- edit the message markup to represent so
+			*/
+
+			database.requests.getMultiple('request_id', request_id).then(r => {
+				if(r[0].desired_seasons.includes(n)) {
+					// remove the season from the place
+					r[0].desired_seasons.splice(r[0].desired_seasons.indexOf(n),1)
+				}
+				else {
+					r[0].desired_seasons.push(n)
+					r[0].desired_seasons.sort()
+				}
+				
+				//console.log(r[0].desired_seasons)
+
+				database.requests.update('request_id', request_id, {desired_seasons: JSON.stringify(r[0].desired_seasons)}).then(info => {
+					context.telegram.editMessageReplyMarkup(
+						context.callbackQuery.message.chat.id, 
+						context.callbackQuery.message.message_id, 
+						context.callbackQuery.inline_message_id, 
+						generateInlineKeyboardMarkup(r[0])
+					)
+					.then(info => {
+						context.telegram.answerCbQuery(context.callbackQuery.id, 'Updated')
+					})
+				})
+
+				//context.telegram.answerCbQuery(context.callbackQuery.id, 'Updated')
+				
+			})
+
+		}
 	}
 
 	//https://core.telegram.org/bots/api#callbackquery
