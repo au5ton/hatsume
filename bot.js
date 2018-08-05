@@ -255,6 +255,22 @@ Promise.all(promises).then(results => {
 		database.requests.getMultiple('done_composing', false)
 		.then(requests => {
 			
+			// If there are no compositions, then we've satisfied something
+			if(requests.length === 0) {
+				//console.log(persistent)
+				for(let i in persistent) {
+					persistent[i].now = -1;
+					if(persistent[i].now !== persistent[i].last) {
+						// If there are no compositions, and now !== last, 
+						// then this user must have just completed their compositions
+						console.log('setState(2)')
+						persistent[i].last = -1;
+						database.users.setState(parseInt(i), 2);
+						bot.telegram.sendMessage(i,'Thanks for answering some of my questions. I\'ll send you a message whenever these item(s) get added. (＾◡＾)')
+					}
+				}
+			}
+
 			// Get all users
 			let users = new Set()
 			for(let i in requests) {
@@ -265,6 +281,8 @@ Promise.all(promises).then(results => {
 				if(persistent[item] === undefined) {
 					persistent[item] = compose_default();
 				}
+				// If the oldest request_id isn't found, then leave this there
+				persistent[item].now = -1
 				// Get their oldest request_id
 				for(let i = 0; i < requests.length; i++) {
 					if(requests[i]['telegram_id'] === item) {
@@ -278,6 +296,7 @@ Promise.all(promises).then(results => {
 			for(let item of users) {
 				// If the oldest request_id
 				if(persistent[item].now !== persistent[item].last) {
+					// if there's a change in current composition
 					console.magenta('new request: '+persistent[item].now)
 					database.requests.getMultiple('request_id',persistent[item].now).then(r => {
 						// Interact with the user
@@ -300,12 +319,7 @@ Promise.all(promises).then(results => {
 			}
 		})
 		.catch(err => {
-			if(err === 'error/requests.getmulitple: results array empty') {
-				// nothing out of the ordinary
-			}
-			else {
-				// ok, what fucked up?
-			}
+			// ok, what fucked up?
 		})
 	},4000)
 });
@@ -324,7 +338,7 @@ function generateTVCompositionMessage(request) {
 		message += 'Please tap to check which seasons you\'re interested in. When you\'ve picked all that are applicable, press Done.';
 	}
 	else {
-		message += 'You\'ve completed your request for seasons '+prettySeasons(request['desired_seasons']);
+		message += 'You\'ve completed your request for season(s): '+prettySeasons(request['desired_seasons']);
 	}
 	return message
 }
@@ -464,7 +478,7 @@ bot.on('callback_query', (context) => {
 					database.requests.update('request_id', request_id, {done_composing: true}).then(info => {
 
 						// Send a user from chat_state 4 to 2 again
-						database.users.setState(r[0]['telegram_id'], 2)
+						//database.users.setState(r[0]['telegram_id'], 2) THIS IS ACTUALLY HANDLED ELSEWHERE
 
 						// Delete the original message we sent
 						context.telegram.deleteMessage(
