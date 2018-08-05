@@ -354,7 +354,11 @@ function generateInlineKeyboardMarkup(request) {
 	})
 
 	//Resize (1,n) array to (2,n/2) array
-	matrix = new Array(Math.ceil(keyboard.length / 2)).fill(new Array(2).fill(0)); // Matrix should have exactly the same indexes as original array
+	matrix = new Array(Math.ceil(keyboard.length / 2)).fill(0)
+	// Matrix should have exactly the same indexes as original array
+	for(let i in matrix) {
+		matrix[i] = new Array(2).fill(0)
+	}
 	let i = 0;
 	console.log('matrix before: ',matrix)
 	for(let r = 0; r < matrix.length; r++) {
