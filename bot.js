@@ -93,6 +93,9 @@ bot.hears(new RegExp('\/unsubscribe|\/unsubscribe@' + BOT_USERNAME), (context) =
 bot.on('message', (context) => {
 	database.users.getState(context.update.message.from.id).then(chat_state => {
 		bot_util.processMessage(context.update.message, chat_state).then((processed) => {
+			if(processed === undefined) {
+				return
+			}
 			// Optionally respond with multiple things at once
 			for(let i in processed.responses) {
 				context.reply(processed.responses[i].text, processed.responses[i].options);
