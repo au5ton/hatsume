@@ -60,19 +60,19 @@ let pms = new PlexAPI({
 //     console.log(err.response)
 // })
 
-let query = async (key) => {
-	return await pms.query(key)
-};
-(async function(){
-	let response = await query('/library/sections')
-	//console.log(response.MediaContainer.Directory)
-	let sections = response.MediaContainer.Directory;
-	//console.log(sections)
-	for(let i in sections) {
-		if(sections[i]['type'] === 'show') {
-			let all_shows = await query('/library/sections/'+sections[i]['key']+'/all')
+// let query = async (key) => {
+// 	return await pms.query(key)
+// };
+// (async function(){
+// 	let response = await query('/library/sections')
+// 	//console.log(response.MediaContainer.Directory)
+// 	let sections = response.MediaContainer.Directory;
+// 	//console.log(sections)
+// 	for(let i in sections) {
+// 		if(sections[i]['type'] === 'show') {
+// 			let all_shows = await query('/library/sections/'+sections[i]['key']+'/all')
 
-			console.log(all_shows)
+// 			console.log(all_shows)
 
 			// pms.query().then(response => {
 
@@ -106,9 +106,9 @@ let query = async (key) => {
 			// }).catch(err => {
 			//     console.error(err)
 			// })
-		}
-	}
-})();
+// 		}
+// 	}
+// })();
 
 
 
@@ -174,3 +174,12 @@ let query = async (key) => {
 //     console.log(filled)
 //     process.exit()
 // })
+(async function(){
+	let val = await plex.getAllLocalTVShows()
+	for(let i in val) {
+		if(val[i]['title'] === 'Fear the Walking Dead') {
+			console.log(val[i])
+		}
+	}
+	//console.log(val)
+})()
