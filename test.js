@@ -171,7 +171,14 @@ let pms = new PlexAPI({
 // })
 
 notify.filledRequests().then(filled => {
-    console.log(filled)
+	console.log(filled)
+	for(let i in filled) {
+		// Of all the desired seasons, keep all the seasons that are NOT downloaded (remove those that ARE downloaded)
+		let remaining_seasons = filled[i]['desired_seasons'].filter((element) => {
+			return !filled[i]['downloaded_seasons'].includes(element)
+		})
+		console.log('remaining:',remaining_seasons)
+	}
     process.exit()
 })
 
