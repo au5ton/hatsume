@@ -18,7 +18,7 @@ Currently, hatsume is in a semi-functioning state. To get an idea of where I am 
 
 ## Running an instance
 
-Hatsume is written in Node.js v10.x, however she might work on lower versions. Keep this in mind when deploying.
+Hatsume is tested in Node.js v10.x and uses some ES7 features available only in Node.js v7.x and up. Keep this in mind when deploying.
 
 ### Hatsume depends on the following APIs. You'll need to supply API keys from them:
 - https://core.telegram.org/bots/api#authorizing-your-bot

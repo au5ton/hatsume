@@ -60,19 +60,19 @@ let pms = new PlexAPI({
 //     console.log(err.response)
 // })
 
-let query = async (key) => {
-	return await pms.query(key)
-};
-(async function(){
-	let response = await query('/library/sections')
-	//console.log(response.MediaContainer.Directory)
-	let sections = response.MediaContainer.Directory;
-	//console.log(sections)
-	for(let i in sections) {
-		if(sections[i]['type'] === 'show') {
-			let all_shows = await query('/library/sections/'+sections[i]['key']+'/all')
+// let query = async (key) => {
+// 	return await pms.query(key)
+// };
+// (async function(){
+// 	let response = await query('/library/sections')
+// 	//console.log(response.MediaContainer.Directory)
+// 	let sections = response.MediaContainer.Directory;
+// 	//console.log(sections)
+// 	for(let i in sections) {
+// 		if(sections[i]['type'] === 'show') {
+// 			let all_shows = await query('/library/sections/'+sections[i]['key']+'/all')
 
-			console.log(all_shows)
+// 			console.log(all_shows)
 
 			// pms.query().then(response => {
 
@@ -106,9 +106,9 @@ let query = async (key) => {
 			// }).catch(err => {
 			//     console.error(err)
 			// })
-		}
-	}
-})();
+// 		}
+// 	}
+// })();
 
 
 
@@ -170,7 +170,20 @@ let query = async (key) => {
 //     console.log(generateInlineKeyboardMarkup(r[0]))
 // })
 
-// notify.filledRequests().then(filled => {
-//     console.log(filled)
-//     process.exit()
-// })
+notify.filledRequests().then(filled => {
+	console.log(filled)
+	for(let i in filled) {
+		// Of all the desired seasons, keep all the seasons that are NOT downloaded (remove those that ARE downloaded)
+		let remaining_seasons = filled[i]['desired_seasons'].filter((element) => {
+			return !filled[i]['downloaded_seasons'].includes(element)
+		})
+		console.log('remaining:',remaining_seasons)
+	}
+    process.exit()
+})
+
+
+
+// (async function(){
+// 	console.log(await database.requests.getMultiple('done_composing', true))
+// })()

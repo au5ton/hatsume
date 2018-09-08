@@ -229,18 +229,54 @@ Promise.all(promises).then(results => {
 		// calculate filled requests
 		notify.filledRequests().then(filled => {
 			for(let i in filled) {
-				bot.telegram.sendMessage(filled[i]['telegram_id'], '⚡️ <b>'+filled[i]['content_name']+(filled[i]['start_year'] === null ? '':' ('+filled[i]['start_year']+')')+' has been added!</b> (＾▽＾)', {
-					parse_mode: 'html',
-					disable_web_page_preview: true
-				})
+				if(filled[i]['is_tv']) {
+					for(let j in filled[i].downloaded_seasons) {
+						let season_name = filled[i].downloaded_seasons[j] === 0 ? 'Specials' : 'Season '+filled[i].downloaded_seasons[j];
+						bot.telegram.sendMessage(filled[i]['telegram_id'], '⚡️ <b>'+season_name+' of '+filled[i]['content_name']+(filled[i]['start_year'] === null ? '':' ('+filled[i]['start_year']+')')+' has been added!</b> (＾▽＾)', {
+							parse_mode: 'html',
+							disable_web_page_preview: true
+						})
+					}
+				}
+				else {
+					bot.telegram.sendMessage(filled[i]['telegram_id'], '⚡️ <b>'+filled[i]['content_name']+(filled[i]['start_year'] === null ? '':' ('+filled[i]['start_year']+')')+' has been added!</b> (＾▽＾)', {
+						parse_mode: 'html',
+						disable_web_page_preview: true
+					})
+				}
 			}
 			for(let i in filled) {
-				database.requests.removeOneByIds(filled[i]['telegram_id'], 'content_name', filled[i]['content_name']).then(info => {
-					console.log('Removed '+filled[i]['telegram_id']+'/'+filled[i]['content_name']+' from the database')
-				})
-				.catch(err => {
-					console.log('Failed to remove '+filled[i]['telegram_id']+'/'+filled[i]['content_name']+' from the database')
-				})
+				if(filled[i]['is_tv']) {
+					let remaining_seasons = filled[i]['desired_seasons'].filter((element) => {
+						return !filled[i]['downloaded_seasons'].includes(element)
+					})
+					// If no more seasons to fulfill, remove the request
+					if(remaining_seasons.length === 0) {
+						database.requests.removeOneByIds(filled[i]['telegram_id'], 'content_name', filled[i]['content_name']).then(info => {
+							console.log('Removed '+filled[i]['telegram_id']+'/'+filled[i]['content_name']+' from the database')
+						})
+						.catch(err => {
+							console.log('Failed to remove '+filled[i]['telegram_id']+'/'+filled[i]['content_name']+' from the database')
+						})
+					}
+					else {
+						// If there are more seasons to fulfill, update the desired_seasons column to only be seasons not yet downloaded
+						database.requests.update('request_id', filled[i]['request_id'], {desired_seasons: JSON.stringify(remaining_seasons)}).then(info => {
+							console.log('Updated  '+filled[i]['telegram_id']+'/'+filled[i]['content_name']+' in the database')
+						})
+						.catch(err => {
+							console.log('Failed to update '+filled[i]['telegram_id']+'/'+filled[i]['content_name']+' in the database')
+						})
+					}
+				}
+				else {
+					database.requests.removeOneByIds(filled[i]['telegram_id'], 'content_name', filled[i]['content_name']).then(info => {
+						console.log('Removed '+filled[i]['telegram_id']+'/'+filled[i]['content_name']+' from the database')
+					})
+					.catch(err => {
+						console.log('Failed to remove '+filled[i]['telegram_id']+'/'+filled[i]['content_name']+' from the database')
+					})
+				}
 			}
 		})
 		
