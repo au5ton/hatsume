@@ -170,16 +170,13 @@ let pms = new PlexAPI({
 //     console.log(generateInlineKeyboardMarkup(r[0]))
 // })
 
-// notify.filledRequests().then(filled => {
-//     console.log(filled)
-//     process.exit()
-// })
-(async function(){
-	let val = await plex.getAllLocalTVShows()
-	for(let i in val) {
-		if(val[i]['title'] === 'Fear the Walking Dead') {
-			console.log(val[i])
-		}
-	}
-	//console.log(val)
-})()
+notify.filledRequests().then(filled => {
+    console.log(filled)
+    process.exit()
+})
+
+
+
+// (async function(){
+// 	console.log(await database.requests.getMultiple('done_composing', true))
+// })()
