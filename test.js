@@ -60,48 +60,56 @@ let pms = new PlexAPI({
 //     console.log(err.response)
 // })
 
-// pms.query('/library/sections').then(response => {
-    
-//     //console.log(response.MediaContainer.Directory)
-//     let sections = response.MediaContainer.Directory;
-//     //console.log(sections)
-//     for(let i in sections) {
-//         if(sections[i]['type'] === 'show') {
-//             pms.query('/library/sections/'+sections[i]['key']+'/all').then(response => {
-//                 //console.log(response)
+let query = async (key) => {
+	return await pms.query(key)
+};
+(async function(){
+	let response = await query('/library/sections')
+	//console.log(response.MediaContainer.Directory)
+	let sections = response.MediaContainer.Directory;
+	//console.log(sections)
+	for(let i in sections) {
+		if(sections[i]['type'] === 'show') {
+			let all_shows = await query('/library/sections/'+sections[i]['key']+'/all')
 
-//                 let shows = response.MediaContainer.Metadata;
-//                 console.log(shows[0])
-//                 console.log(shows[1])
-//                 // for(let i in shows) {
-//                 //     tvdb.getSeriesByName(shows[i]['title']).then(tvdb_entry => {
-//                 //         let dice = compare(shows[i]['title'],tvdb_entry[0].seriesName)
-//                 //         if(dice < 1) {
-//                 //             console.warn(shows[i]['title']+' <=[ '+dice+' ]=> '+tvdb_entry[0].seriesName)
-//                 //         }
-//                 //         else {
-//                 //             console.log(shows[i]['title']+' <=[ '+dice+' ]=> '+tvdb_entry[0].seriesName)
-//                 //         }
-//                 //     }).catch(err => {
-//                 //         if(err.response.status === 404) {
-//                 //             console.warn(shows[i]['title']+' 404')
-//                 //         }
-//                 //         else {
-//                 //             console.error(err)
-//                 //         }
-//                 //     })
-//                 // }
+			console.log(all_shows)
 
-//             }).catch(err => {
-//                 console.error(err)
-//             })
-//         }
-//     }
-// })
+			// pms.query().then(response => {
 
-// }).catch(err => {
-//     console.error('Error connecting to PMS: ', err)
-// });
+			// 	pms.query(response.MediaContainer.Metadata[0].key).then(response => {
+			// 		console.log(response.MediaContainer)
+			// 	})
+			//     //console.log(response)
+
+			//     let shows = response.MediaContainer.Metadata;
+			//     console.log(shows[0])
+			//     //console.log(shows[1])
+			//     // for(let i in shows) {
+			//     //     tvdb.getSeriesByName(shows[i]['title']).then(tvdb_entry => {
+			//     //         let dice = compare(shows[i]['title'],tvdb_entry[0].seriesName)
+			//     //         if(dice < 1) {
+			//     //             console.warn(shows[i]['title']+' <=[ '+dice+' ]=> '+tvdb_entry[0].seriesName)
+			//     //         }
+			//     //         else {
+			//     //             console.log(shows[i]['title']+' <=[ '+dice+' ]=> '+tvdb_entry[0].seriesName)
+			//     //         }
+			//     //     }).catch(err => {
+			//     //         if(err.response.status === 404) {
+			//     //             console.warn(shows[i]['title']+' 404')
+			//     //         }
+			//     //         else {
+			//     //             console.error(err)
+			//     //         }
+			//     //     })
+			//     // }
+
+			// }).catch(err => {
+			//     console.error(err)
+			// })
+		}
+	}
+})();
+
 
 
 // Erased (2016) anime: tt5249462
@@ -126,41 +134,41 @@ let pms = new PlexAPI({
 //     console.error(err)
 // })
 
-function generateInlineKeyboardMarkup(request) {
-	let keyboard = []
-	let seasons = request['available_seasons'];
-	let wanted = request['desired_seasons'];
-	for(let i in seasons) {
-		let n = (seasons[i] < 10 ? 'S0'+seasons[i] : 'S'+seasons[i]); // make it 2 characters long for style
-		if(seasons[i] === 0) {
-			keyboard.push({
-				text: (wanted.includes(seasons[i]) ? 'Specials ☑️' : 'Specials ⬜️'),
-				callback_data: seasons[i]+''
-			})
-		}
-		else {
-			keyboard.push({
-				// S01 ☑️
-				// S01 ⬜️
-				text: (wanted.includes(seasons[i]) ? n+' ☑️' : n+' ⬜️'),
-				callback_data: seasons[i]+''
-			})
-		}
-	}
-	keyboard.push({
-		text: 'All',
-		callback_data: 'all'
-	})
-	keyboard.push({
-		text: 'Done',
-		callback_data: 'done'
-	})
-	return [keyboard];
-}
+// function generateInlineKeyboardMarkup(request) {
+// 	let keyboard = []
+// 	let seasons = request['available_seasons'];
+// 	let wanted = request['desired_seasons'];
+// 	for(let i in seasons) {
+// 		let n = (seasons[i] < 10 ? 'S0'+seasons[i] : 'S'+seasons[i]); // make it 2 characters long for style
+// 		if(seasons[i] === 0) {
+// 			keyboard.push({
+// 				text: (wanted.includes(seasons[i]) ? 'Specials ☑️' : 'Specials ⬜️'),
+// 				callback_data: seasons[i]+''
+// 			})
+// 		}
+// 		else {
+// 			keyboard.push({
+// 				// S01 ☑️
+// 				// S01 ⬜️
+// 				text: (wanted.includes(seasons[i]) ? n+' ☑️' : n+' ⬜️'),
+// 				callback_data: seasons[i]+''
+// 			})
+// 		}
+// 	}
+// 	keyboard.push({
+// 		text: 'All',
+// 		callback_data: 'all'
+// 	})
+// 	keyboard.push({
+// 		text: 'Done',
+// 		callback_data: 'done'
+// 	})
+// 	return [keyboard];
+// }
 
-database.requests.getMultiple('request_id',60).then(r => {
-    console.log(generateInlineKeyboardMarkup(r[0]))
-})
+// database.requests.getMultiple('request_id',60).then(r => {
+//     console.log(generateInlineKeyboardMarkup(r[0]))
+// })
 
 // notify.filledRequests().then(filled => {
 //     console.log(filled)
