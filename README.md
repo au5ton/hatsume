@@ -15,6 +15,7 @@ Currently, hatsume is in a semi-functioning state. To get an idea of where I am 
 - [X] [Request specific season(s) of a show](https://github.com/au5ton/hatsume/issues/9)
 - [ ] [Opt-in to Sonarr notifications](https://github.com/au5ton/hatsume/issues/13)
 - [ ] [Implement maintainer tools](https://github.com/au5ton/hatsume/issues/4)
+- [ ] Improve code quality to match Google guidelines
 - [ ] Other features maybe
 - [ ] Fix some bugs along the way
 
