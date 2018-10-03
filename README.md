@@ -1,5 +1,7 @@
 ![hatsume](img/hatsume.png)
 
+[![CircleCI](https://circleci.com/gh/au5ton/hatsume.svg?style=svg)](https://circleci.com/gh/au5ton/hatsume) [![codebeat badge](https://codebeat.co/badges/6ff65f94-1200-484e-b687-4fcc298bf9fc)](https://codebeat.co/projects/github-com-au5ton-hatsume-master)
+
 # hatsume
 Telegram bot to act as a courier for Plex content requests.
 
